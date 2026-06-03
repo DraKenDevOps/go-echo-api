@@ -9,7 +9,11 @@ import (
 
 // Handler holds shared dependencies used by all sub-handlers.
 type Handler struct {
-	DB     *sql.DB
-	Config *config.Config
-	Logger *zplogger.Logger
+	db     *sql.DB
+	cfg    *config.Config
+	logger *zplogger.Logger
+}
+
+func NewHandler(db *sql.DB, cfg *config.Config, logger *zplogger.Logger) *Handler {
+	return &Handler{db: db, cfg: cfg, logger: logger}
 }

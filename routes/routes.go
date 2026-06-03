@@ -12,14 +12,19 @@ import (
 )
 
 // RegisterRoutes registers all API routes
-func RegisterRoutes(e *echo.Echo, db *sql.DB, logger *zplogger.Logger, cfg *config.Config) {
-	handler := &handlers.Handler{DB: db, Config: cfg, Logger: logger}
+func RegisterRoutes(e *echo.Echo, db *sql.DB, cfg *config.Config, logger *zplogger.Logger) {
+	handler := handlers.NewHandler(db, cfg, logger)
 
 	api := e.Group(cfg.BasePath)
 	api.POST("/login", handler.Login)
 	api.GET("/refresh", handler.Refresh, middleware.AuthChecker(cfg, logger))
 
-	// TODO: Add other route groups (accounts, pockets, transactions)
+	api.POST("/save_account", handler.SaveNewAccount, middleware.AuthChecker(cfg, logger))
+	api.POST("/save_pocket", handler.SaveNewPocket, middleware.AuthChecker(cfg, logger))
+	api.POST("/save_transaction", handler.SaveTransaction, middleware.AuthChecker(cfg, logger))
+
+	api.GET("/get_pocket/:id", handler.GetPocketById, middleware.AuthChecker(cfg, logger))
+	api.GET("/get_transactions/:id", handler.GetTransactionList, middleware.AuthChecker(cfg, logger))
 }
 
 // LoggerMiddleware returns a middleware that logs requests using zap logger
@@ -29,6 +34,6 @@ func LoggerMiddleware(logger *zplogger.Logger) echo.MiddlewareFunc {
 		Logger:         logger,
 		IgnorePaths:    []string{"/health", "/metrics"},
 		IgnoreBodyKeys: []string{"file", "files"},
-		MaskedKeys:     []string{"password"},
+		MaskedKeys:     []string{"password", "token", "access_token", "accessToken"},
 	})
 }

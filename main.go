@@ -56,13 +56,14 @@ func main() {
 		return c.JSON(200, res)
 	})
 
-	routes.RegisterRoutes(e, db, logger, cfg)
+	routes.RegisterRoutes(e, db, cfg, logger)
 
 	hostAddr := cfg.Host + ":" + cfg.ServerPort
 	logger.Info("Server starting on " + hostAddr)
 
+	err := e.Start(hostAddr)
 	go func() {
-		if err := e.Start(hostAddr); err != nil && err != http.ErrServerClosed {
+		if err != nil && err != http.ErrServerClosed {
 			logger.Error("Server startup failed", zap.Error(err))
 		}
 	}()

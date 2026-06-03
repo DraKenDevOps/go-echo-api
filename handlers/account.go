@@ -12,31 +12,40 @@ func (h *Handler) SaveNewAccount(c echo.Context) error {
 	ctx := c.Request().Context()
 	err := c.Bind(&ac)
 	if err != nil {
-		h.Logger.Error("Invalid request body", zap.Error(err))
+		h.logger.Error("Invalid request body", zap.Error(err))
 		return c.JSON(200, map[string]any{
 			"status": "error", "message": "Invalid request body",
 		})
 	}
 
-	if h.Config.LimitMaxBalance && ac.Balance > 10000 {
-		h.Logger.Warn("Balance limit on account creating")
+	if h.cfg.LimitMaxBalance && ac.Balance > 10000 {
+		h.logger.Warn("Balance limit on account creating")
 		return c.JSON(200, map[string]any{
 			"status": "error", "message": "Balance over the limit",
 		})
 	}
 
-	const sql = "INSERT INTO accounts (balance) VALUES (?);"
+	const sql = "INSERT INTO accounts (balance) VALUES (?)"
 
-	var insertId int
-	err = h.DB.QueryRowContext(ctx, sql, ac.Balance).Scan(&insertId)
+	result, err := h.db.ExecContext(ctx, sql, ac.Balance)
 	if err != nil {
-		h.Logger.Error("Error save new account", zap.Error(err))
+		h.logger.Error("Error save new account", zap.Error(err))
 		return c.JSON(200, map[string]any{
-			"status": "error", "message": "Failed to save account",
+			"status":  "error",
+			"message": "Failed to save account",
 		})
 	}
 
-	h.Logger.Info("Save new account", zap.Int("accountId", insertId))
+	insertId, err := result.LastInsertId()
+	if err != nil {
+		h.logger.Error("Error getting insert id", zap.Error(err))
+		return c.JSON(200, map[string]any{
+			"status":  "error",
+			"message": "Failed to get insert id",
+		})
+	}
+
+	h.logger.Info("Save new account", zap.Int64("accountId", insertId))
 
 	return c.JSON(200, map[string]any{
 		"status": "success", "message": "Save new successfully",

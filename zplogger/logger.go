@@ -11,7 +11,6 @@ import (
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
-// Config holds logger options.
 type LogConfig struct {
 	LogDir     string
 	LogFile    string
@@ -94,7 +93,6 @@ func NewLogger(cfg *config.Config) *Logger {
 	logDir := opts.LogDir
 	_ = os.MkdirAll(logDir, 0755)
 
-	// Main log file with lumberjack
 	if opts.LogFile != "" {
 		w := &lumberjack.Logger{
 			Filename:   filepath.Join(logDir, opts.LogFile),
@@ -110,7 +108,6 @@ func NewLogger(cfg *config.Config) *Logger {
 		))
 	}
 
-	// Error log file with lumberjack
 	if opts.ErrorFile != "" {
 		w := &lumberjack.Logger{
 			Filename:   filepath.Join(logDir, opts.ErrorFile),
@@ -126,7 +123,6 @@ func NewLogger(cfg *config.Config) *Logger {
 		))
 	}
 
-	// Console output
 	if opts.Console {
 		cores = append(cores, zapcore.NewCore(
 			zapcore.NewConsoleEncoder(consoleEncoderConfig),
@@ -148,7 +144,6 @@ func NewLogger(cfg *config.Config) *Logger {
 	return &Logger{logger}
 }
 
-// Close syncs the underlying zap logger.
 func (l *Logger) Close() error {
 	if l.Logger != nil {
 		_ = l.Logger.Sync()
