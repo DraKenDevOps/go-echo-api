@@ -22,7 +22,7 @@ const (
 	listStmt = `SELECT txn_id, from_pocket_id, to_pocket_id, amount, DATE_FORMAT(txn_date, '%Y-%m-%d %H:%i:%s')
 		FROM transactions
 		WHERE (from_pocket_id ? OR to_pocket_id = ?)
-		ORDER BY id DESC
+		ORDER BY txn_id DESC
 		LIMIT ? OFFSET ?`
 
 	countStmt = "SELECT COUNT(*) FROM transactions WHERE (from_pocket_id ? OR to_pocket_id = ?)"
@@ -31,7 +31,7 @@ const (
 func (h *Handler) SaveTransaction(ec echo.Context) error {
 	ctx := ec.Request().Context()
 
-	var txn models.Transaction
+	var txn models.TxnReqBody
 	err := ec.Bind(&txn)
 
 	if err != nil {
@@ -99,7 +99,7 @@ func (h *Handler) SaveTransaction(ec echo.Context) error {
 }
 
 func updateAmountPocketById(tx *sql.Tx, pocketId int, amount float64) {
-	res, err := tx.Exec("UPDATE pockets SET amount = ? WHERE id = ?", amount, pocketId)
+	res, err := tx.Exec("UPDATE pockets SET amount = ? WHERE pocket_id = ?", amount, pocketId)
 	if err != nil {
 		fmt.Println(err.Error())
 		tx.Rollback()
