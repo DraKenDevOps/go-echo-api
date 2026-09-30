@@ -31,7 +31,8 @@ func main() {
 
 	e := echo.New()
 
-	e.Static("/static", filepath.Join(cfg.Cwd, "uploads"))
+	// e.Static("/static", filepath.Join(cfg.Cwd, "uploads"))
+	e.StaticFS("/static", os.DirFS(filepath.Join(cfg.Cwd, "uploads")))
 	e.Use(middleware.Recover())
 	e.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
 		LogStatus:   true,
