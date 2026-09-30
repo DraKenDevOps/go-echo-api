@@ -1,0 +1,9 @@
+.git
+.env
+logs/
+uploads/
+tmp/
+*.exe
+*.md
+watch.sh
+watch.bat
